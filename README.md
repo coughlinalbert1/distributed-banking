@@ -1,5 +1,5 @@
 # distributed-banking
-Building a mock banking application using a microservice architecture. The tech stack will be React (maybe can skip building a front end to save time), Python-FastAPI, OAuth2, PostgreSQL + Citus, Nginx, Kafka, Docker, Kubernetes, + maybe something for logging?
+Building a distributed banking application using a microservice architecture. The tech stack can be React (maybe can skip building a front end to save time), Python-FastAPI, OAuth2, PostgreSQL + Citus, Nginx, Kafka, Docker, Kubernetes, + maybe something for logging?
 
 ## Core Services
 ### User Service
