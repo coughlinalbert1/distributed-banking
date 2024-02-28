@@ -1,5 +1,5 @@
 # distributed-banking
-Building a mock banking application using a microservice architecture. The tech stack will be React, Python-FastAPI, OAuth2, PostgreSQL + Citus, Nginx, Kafka, Docker, Kubernetes.
+Building a mock banking application using a microservice architecture. The tech stack will be React, Python-FastAPI, OAuth2, PostgreSQL + Citus, Nginx, Kafka, Docker, Kubernetes, + maybe something for logging?
 
 ## Core Services
 ### User Service
@@ -14,10 +14,10 @@ Building a mock banking application using a microservice architecture. The tech 
 - Manages all transations (i.e. deposit, withdrawl, and transfers)
 - Ensure transactional integrity and consistency
 
-### Loan Service
+### Loan Service (We can probably skip this service bc it sounds like a pain)
 - Manages loan application (i.e. approvals, disburments, and repayments)
 
-### Payment Service
+### Payment Service (maybe skip this too for same reasons)
 - external payments, direct debits, and payment gateways
 
 ### Notification Service
@@ -42,7 +42,7 @@ This app will use PostgreSQL with the Citus extension. Citus horizontally scales
 
 ## Event Driven Architecture
 ### Message Broker
-Facilitates asynchronous communication between services via events, which ensures loose coupling, enhances scalability, and improves the overall system's resilience.
+We can use Kafka for this. It facilitates asynchronous communication between services via events, which ensures loose coupling, enhances scalability, and improves the overall system's resilience.
 
 ## Containers and Orchestration
 ### Container - Docker
