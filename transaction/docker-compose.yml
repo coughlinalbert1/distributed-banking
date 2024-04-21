@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=$(REDIS_HOST)
+      - REDIS_PORT=$(REDIS_PORT)
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
+      - AUTHENTICATION=${AUTHENTICATION}
+      - ACCOUNT=${ACCOUNT}
+      - TRANSACTION=${TRANSACTION}
+
+  redis:
+    image: "redis:alpine"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    expose:
+      - "${REDIS_PORT}"
