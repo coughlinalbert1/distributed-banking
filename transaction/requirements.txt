@@ -1,0 +1,8 @@
+fastapi
+redis_om
+python-dotenv
+uvicorn
+python-multipart
+requests
+python-jose
+httpx
