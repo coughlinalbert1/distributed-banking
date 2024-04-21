@@ -6,3 +6,4 @@ python-jose
 python-dotenv
 redis_om
 python-multipart
+httpx

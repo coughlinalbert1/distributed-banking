@@ -1,16 +1,20 @@
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from redis_om import get_redis_connection, HashModel
 import os
 from hash import Hash
 from typing import Optional
-from jose import jwt
+from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 
+
 load_dotenv()
+ACCOUNT= os.getenv('ACCOUNT')
+TRANSACTION= os.getenv('TRANSACTION')
+AUTHENTICATION= os.getenv('AUTHENTICATION')
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = os.getenv('ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES')
@@ -18,9 +22,25 @@ PORT = os.getenv('REDIS_PORT')
 PASSWORD = os.getenv('REDIS_PASSWORD')
 HOST = os.getenv('REDIS_HOST')
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+app = FastAPI(
+    title="User Authentication Service", 
+    version="1.0", 
+    description="User Authentication Service using FastAPI and Redis"
+)
 
-app = FastAPI()
+origins = [
+    ACCOUNT,
+    TRANSACTION,
+    AUTHENTICATION
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 redis = get_redis_connection(
     host=HOST,
@@ -28,14 +48,14 @@ redis = get_redis_connection(
     password=PASSWORD,
     decode_responses=True
 )
+
 '''
 Data models for requests, response, and redis schema
 '''
 class User(BaseModel):
     username: str
     password: str
-
-
+    
 class UserModel(HashModel):
     username: str
     password: str
@@ -46,6 +66,8 @@ class UserResponse(HashModel):
     user_ID: str
     username: str
     password: str
+    access: str = ""
+    time_expires: Optional[str] = None
     class Meta:
         database = redis
 
@@ -58,7 +80,7 @@ def get_user(username: str):
     all_keys = redis.scan_iter("*")
     keys = [key.split(":")[-1] for key in all_keys if "UserResponse" in key]
     if not keys:
-        raise HTTPException(status_code=404, detail="No user found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user found")
     for key in keys:
         user = UserResponse.get(key.split(":")[-1])
         if user.username == username:
@@ -68,7 +90,7 @@ def get_user(username: str):
 def authenticate_user(username: str, password: str):
     user = get_user(username)
     if not user:
-        return False
+        return False  # Here consider throwing an exception or returning None
     if not Hash.verify(user.password, password):
         return False
     return user
@@ -90,7 +112,6 @@ def format(pk: str):
         "username": user_response.username,
         "password": user_response.password
     }
-
 #####################################################################
 
 '''
@@ -115,8 +136,8 @@ async def register(user_request: User):
     user_response.save()
     return format(user_response.pk)
 
-@app.post("/token", response_model=None)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+@app.post("/login", response_model=None)
+async def login_for_access_token(form_data: User):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -127,5 +148,13 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=timedelta(minutes=eval(ACCESS_TOKEN_EXPIRE_MINUTES))
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "username" : user.username,
+        "user_id" : user.user_ID
+        }
+
+
+
 
