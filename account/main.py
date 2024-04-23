@@ -63,7 +63,7 @@ class AccountModel(HashModel):
     last_name: str
     balance: Optional[float] = 0.0
     access: str = ""
-    time_expires: Optional[str] = None
+
 
     class Meta: 
         database = redis
@@ -111,12 +111,11 @@ def get_user_by_name(username: str):
 @app.post("/create/")
 async def account(request: Account):
     url = f'{AUTHENTICATION}/register/'
-    headers = {'Content-Type': 'application/json'}
     data = {
         'username': request.username,
         'password': request.password
     }
-    req = requests.post(url, json=data, headers=headers)
+    req = requests.post(url, json=data)
 
     if req.status_code == status.HTTP_400_BAD_REQUEST:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="username is taken")
@@ -159,46 +158,25 @@ async def get_account(user_id: str):
 
 
 @app.post("/login/")
-async def login(account: OAuth2PasswordRequestForm = Depends()):
+async def login(user: OAuth2PasswordRequestForm = Depends()):
     url = f'{AUTHENTICATION}/login/'
-    headers = {'Content-Type': 'application/json'}
     data = {
-        'username': account.username,
-        'password': account.password
+        'username': user.username,
+        'password': user.password
     }
-    req = requests.post(url, json=data, headers=headers)
+    req = requests.post(url, data=data)
 
     if req.status_code == status.HTTP_404_NOT_FOUND:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     elif req.status_code == status.HTTP_401_UNAUTHORIZED:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
     
-    response = req.json()
-    
-    account = get_user_by_name(response['username'])
+    account = get_user_by_name(user.username)
     if not account:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
-
-    account.access = response['access_token']
-    try:
-        await asyncio.to_thread(account.save)
-        logging.info(f'Access token saved for {account.username}')
-    except Exception as e:
-        logging.error(f'Failed to save access token for {account.username}: {str(e)}')
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to update account")
     
-    account_info = format_response(account)
+    return format_response(account)
     
-    return {
-        'access_token': response['access_token'],
-        'token_type': response['token_type'],
-        'username': account_info['username'],
-        'user_id': account_info['user_id'],
-        'email': account_info['email'],
-        'phone_num': account_info['phone_num'],
-        'first_name': account_info['first_name'],
-        'last_name': account_info['last_name'],
-        'balance': account_info['balance']
-    }
+    
 
 
