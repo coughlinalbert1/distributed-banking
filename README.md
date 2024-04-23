@@ -10,6 +10,10 @@ Building a distributed banking application using a microservice architecture. Th
 - Authentication
 - Authorization
 
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/Cr3XkhOw9xE/0.jpg)](https://www.youtube.com/watch?v=Cr3XkhOw9xE)
+
+
 ## Authorization Service
 ### Registers users, creates access tokens
 <img width="1067" alt="image" src="https://github.com/coughlinalbert1/distributed-banking/assets/111651444/770e444e-358c-47e8-b432-c3d1f1f2dfab">
