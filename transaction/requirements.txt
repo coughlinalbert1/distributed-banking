@@ -5,4 +5,4 @@ uvicorn
 python-multipart
 requests
 python-jose
-httpx
+
