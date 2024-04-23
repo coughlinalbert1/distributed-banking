@@ -1,12 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from redis_om import get_redis_connection, HashModel
-import os
+import os, logging, asyncio
 from hash import Hash
 from typing import Optional
-from jose import jwt, JWTError
-from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 
@@ -95,16 +94,6 @@ def authenticate_user(username: str, password: str):
         return False
     return user
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-    to_encode.update({'exp': expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
 def format(pk: str):
     user_response = UserResponse.get(pk)
     return {
@@ -112,6 +101,7 @@ def format(pk: str):
         "username": user_response.username,
         "password": user_response.password
     }
+
 #####################################################################
 
 '''
@@ -133,11 +123,17 @@ async def register(user_request: User):
         username=user.username,
         password=hashed_password
     )
-    user_response.save()
+    try:
+        await asyncio.to_thread(user_response.save)
+        logging.info(f'Account saved for {user_response.username}')
+    except Exception as e:
+        logging.error(f'Failed to save account for {user_response.username}: {str(e)}')
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create account")
+    
     return format(user_response.pk)
 
-@app.post("/login", response_model=None)
-async def login_for_access_token(form_data: User):
+@app.post("/login/", response_model=None)
+async def verify(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -145,16 +141,4 @@ async def login_for_access_token(form_data: User):
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=timedelta(minutes=eval(ACCESS_TOKEN_EXPIRE_MINUTES))
-    )
-    return {
-        "access_token": access_token, 
-        "token_type": "bearer",
-        "username" : user.username,
-        "user_id" : user.user_ID
-        }
-
-
-
-
+    return {"success": "User authenticated successfully"}
