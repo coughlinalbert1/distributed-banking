@@ -1,46 +1,123 @@
-# distributed-banking
-Building a distributed banking application using a microservice architecture. The tech stack can be React, Python-FastAPI, OAuth2, Redis, Nginx, Docker
+# Distributed Banking System
 
-[Link to code repo](https://github.com/coughlinalbert1/distributed-banking)
+A Microservices-based banking backend built with FastAPI, Redis, and Docker.
+
+[Link to repository](https://github.com/coughlinalbert1/distributed-banking)
 
 <img width="1116" alt="image" src="https://github.com/coughlinalbert1/distributed-banking/assets/111651444/3ca3b82a-fd44-441a-89b7-1623c2cb98e6">
 
 
-## Core Services
-### User Service
-- user account management
-- Authentication
-- Authorization
+The Distributed Banking System is a microservices-based backend designed for secure financial transactions, including user authentication, account management, and transaction processing. It utilizes FastAPI, Redis, OAuth2, JWT, and Docker to ensure scalability, security, and efficiency.
 
-### Link to Video Demonstration
+
+## Features
+✔ Microservices Architecture – Modular services for authentication, accounts, and transactions.
+
+✔ JWT-based Authentication – Secure user login with OAuth2.
+
+✔ Redis as a Database & Message Broker – Fast, in-memory data storage and inter-service communication.
+
+✔ Containerized with Docker – Simplifies deployment and scaling.
+
+✔ Asynchronous API Calls – Optimized performance with Uvicorn and Redis Streams.
+
+✔ Planned API Gateway (NGINX) – Future support for load balancing and improved security.
+
+
+## How it Works
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/Cr3XkhOw9xE/0.jpg)](https://www.youtube.com/watch?v=Cr3XkhOw9xE)
 
 
-## Authorization Service
-### Registers users, creates access tokens
-The authorization service creates accounts, hashes passwords, and verify credentials. Passwords are hashed and verified using bcrypt from the passlib library. This is done so that passwords are never stored in plain text in the Redis database. This is standard practice for account creation and credential verification. The transaction and account service make calls to this service to handle account creation and credential verification.
+## 🛠️ Tech Stack
 
-## Account Service
-#### Handles bank accounts (i.e. account creation, balance tracking, login)
-This service handles logging in, account creation, and retrieving account data. To fulfill these tasks, the account service makes calls to the authorization service to make sure it is ok to create the account with the given data, allow logging in, and to retrieve the user data.
+| **Category**          | **Technology Used**      |
+|----------------------|------------------------|
+| **Backend**          | FastAPI, Python        |
+| **Database**         | Redis                  |
+| **Authentication**   | OAuth2, JWT            |
+| **Service Communication** | Redis Streams  |
+| **Containerization** | Docker                 |
+| **Planned Enhancements** | NGINX API Gateway, Deployment |
+
+## 📂 Microservices
+The system consists of three main microservices:
+
+### 1️⃣ Authentication Service
+- Manages **user registration, login, and password hashing** using bcrypt.
+- Issues **JWT tokens** for authentication.
+- Uses **OAuth2** for secure access.
+
+### 2️⃣ Account Service
+- Handles **account creation, balance tracking, and user identity verification**.
+- Interacts with **Redis for account data storage**.
+- Requires **JWT authentication** for security.
+
+### 3️⃣ Transaction Service
+- Manages **deposits, withdrawals, and transfers** securely.
+- Utilizes **Redis Streams** for inter-service communication.
+- Verifies **account balance before processing transactions**.
+
+---
+
+## 📦 Setup & Installation
+### 🔹 Prerequisites
+Ensure you have:
+- **Python 3.9+**
+- **Docker & Docker Compose**
+- **Redis installed locally** (or use Docker)
+
+### 🔹 Clone the Repository
+```bash
+git clone https://github.com/coughlinalbert1/distributed-banking.git
+cd distributed-banking
+```
 
 
-## Transaction Service
-### Manages all transations (i.e. deposit, withdrawl, and transfers)
-This service locks the transactions so that a user must have valid credentials and a JWT session token. Once these have been granted, the user can make transactions.
+### 🔹 Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
+### 🔹 Configure Environment Variables  
+Before running the project, ensure you have the necessary environment variables set up:  
 
-## Improvements for the Future
-Create a React front end and a NGINX API gateway to forward requests from the client to the APIs.
+1. **Create the required environment files** (`.env` or config files) for each service.  
+2. **Set up a Redis instance** (either locally or using a cloud provider like RedisLabs).  
+3. **Add your Redis database connection URL** to the environment variables.  
 
+Failure to configure these variables may result in connection issues between services.
 
-## Supporting Services
-### API Gateway
-This app will use NGINX for the gateway. The API Gateway acts as an entry point for client requests into the application. It routes the request to the appropriate core service (microservice) and provides load balancing, SSL termination, and authentication.
+### 🔹 Run with Docker
+```bash
+pip install -r requirements.txt
+```
 
+### 🔹 Run Services Manually (Without Docker)
+```bash
+uvicorn auth_service.main:app --host 0.0.0.0 --port 8001
+uvicorn account_service.main:app --host 0.0.0.0 --port 8002
+uvicorn transaction_service.main:app --host 0.0.0.0 --port 8003
+```
 
-## Containers and Orchestration
-### Container - Docker
-Each microservice and some components (like NGINX and Kafka) of the application will be encapsulated into a container. This ensures consistency for development, testing, and production environments.
+## 📖 API Documentation
+Once running, FastAPI provides an interactive API UI at:
+-	**Authentication Service → http://localhost:8001/docs**
+-	**Account Service → http://localhost:8002/docs**
+-	**Transaction Service → http://localhost:8003/docs**
 
+## 🔮 Future Enhancements
 
+| Feature | Description |
+|---------|------------|
+| 🚧 **NGINX API Gateway** | Implement load balancing, request routing, and security improvements. |
+| 🚧 **Frontend UI (React-based dashboard)** | Develop a user-friendly interface for account management and transactions. |
+| 🚧 **Database Upgrade** | Move from Redis to PostgreSQL for persistent data storage. |
+| 🚧 **Advanced Monitoring** | Integrate Prometheus & Grafana for real-time system monitoring. |
+| 🚧 **Kubernetes Deployment** | Improve scalability by deploying microservices using Kubernetes. |
+| 🚧 **Event-Driven Architecture** | Implement Kafka or RabbitMQ for more scalable inter-service communication. |
+
+## 👨‍💻 Contributors
+Albert Coughlin – Backend Engineer
+
+## 📜 License
+This project is licensed under the MIT License – feel free to use and modify.
